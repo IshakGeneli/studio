@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Query Örnekleri</title>
+    <link rel="icon" href="/src/assets/fav.svg">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-900 text-gray-100 p-8 font-sans">
+    <div class="max-w-3xl mx-auto">
+        <header class="mb-8 border-b border-gray-700 pb-4">
+            <h1 class="text-3xl font-bold text-indigo-400">Sorgu Konsolu Örnekleri</h1>
+            <p class="text-gray-400 mt-2">JavaScript syntax'ı kullanarak verilerinizi filtreleyebilir ve
+                dönüştürebilirsiniz.</p>
+        </header>
+
+        <div class="space-y-6">
+            <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                <h2 class="text-lg font-semibold text-pink-400 mb-2">1. Basit Filtreleme</h2>
+                <p class="text-sm text-gray-400 mb-3">ID'si 5'ten büyük olan öğeleri listeler.</p>
+                <code class="block bg-black p-3 rounded text-blue-300">items.filter(x => x.id > 5)</code>
+            </div>
+
+            <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                <h2 class="text-lg font-semibold text-pink-400 mb-2">2. Veri Dönüştürme (Mapping)</h2>
+                <p class="text-sm text-gray-400 mb-3">Sadece ürün isimlerinden oluşan yeni bir liste oluşturur.</p>
+                <code class="block bg-black p-3 rounded text-blue-300">products.map(p => p.name)</code>
+            </div>
+
+            <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                <h2 class="text-lg font-semibold text-pink-400 mb-2">3. Koşullu Arama</h2>
+                <p class="text-sm text-gray-400 mb-3">Kategorisi 'elektronik' olan ilk öğeyi bulur.</p>
+                <code
+                    class="block bg-black p-3 rounded text-blue-300">store.inventory.find(item => item.category === 'elektronik')</code>
+            </div>
+        </div>
+
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            <p>Daha fazla özellik için JavaScript Array metotlarını (reduce, sort, slice vb.) inceleyebilirsiniz.</p>
+        </footer>
+    </div>
+</body>
+
+</html>

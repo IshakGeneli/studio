@@ -4,12 +4,13 @@ const inputEl = document.getElementById('json-input') as HTMLTextAreaElement;
 const outputEl = document.getElementById('json-output') as HTMLPreElement;
 const statusBadge = document.getElementById('status-badge') as HTMLSpanElement;
 const viewModeSelect = document.getElementById('view-mode') as HTMLSelectElement;
-
-// İşlenmiş JSON'u hafızada tutuyoruz, böylece mod değiştirirken tekrar parse etmeyiz
+const textActions = document.getElementById('text-actions') as HTMLDivElement;
+const minifyBtn = document.getElementById('minify-btn') as HTMLButtonElement;
+const beautifyBtn = document.getElementById('beautify-btn') as HTMLButtonElement;
+const copyBtn = document.getElementById('copy-btn') as HTMLButtonElement;
+const copyBtnText = document.getElementById('copy-btn-text') as HTMLSpanElement;
 let currentParsedData: any = null;
 
-// --- TEXT MODU ---
-// JSON verisini Tailwind renkleriyle renklendiren fonksiyon
 function syntaxHighlight(json: string): string {
   json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
@@ -17,14 +18,14 @@ function syntaxHighlight(json: string): string {
 
     if (/^"/.test(match)) {
       if (/:$/.test(match)) {
-        cls = 'text-pink-400'; // Anahtarlar (Keys)
+        cls = 'text-pink-400';
       } else {
-        cls = 'text-green-400'; // String değerler
+        cls = 'text-green-400';
       }
     } else if (/true|false/.test(match)) {
-      cls = 'text-yellow-400'; // Boolean
+      cls = 'text-yellow-400';
     } else if (/null/.test(match)) {
-      cls = 'text-gray-400'; // Null
+      cls = 'text-gray-400';
     }
 
     return `<span class="${cls}">${match}</span>`;
@@ -74,25 +75,6 @@ function renderTree(data: any, isRoot = true): string {
   return '';
 }
 
-// --- EKRAN GÜNCELLEME ---
-function updateView() {
-  if (!currentParsedData) {
-    outputEl.innerHTML = '';
-    return;
-  }
-
-  const mode = viewModeSelect.value;
-  if (mode === 'text') {
-    const formatted = JSON.stringify(currentParsedData, null, 4);
-    outputEl.innerHTML = syntaxHighlight(formatted);
-  } else if (mode === 'tree') {
-    outputEl.innerHTML = renderTree(currentParsedData);
-  }
-}
-
-// --- OLAY DİNLEYİCİLERİ (EVENTS) ---
-
-// 1. Textarea'ya yazı girildiğinde
 inputEl.addEventListener('input', () => {
   const rawValue = inputEl.value.trim();
 
@@ -120,3 +102,141 @@ inputEl.addEventListener('input', () => {
 
 viewModeSelect.addEventListener('change', updateView);
 
+const consoleToggle = document.getElementById('console-toggle') as HTMLButtonElement;
+const consoleContent = document.getElementById('console-content') as HTMLDivElement;
+const consoleChevron = document.querySelector('#console-chevron') as SVGElement;
+const queryInput = document.getElementById('query-input') as HTMLInputElement;
+const queryOutput = document.getElementById('query-output') as HTMLPreElement;
+
+consoleToggle.addEventListener('click', () => {
+  const isHidden = consoleContent.classList.contains('hidden');
+  if (isHidden) {
+    consoleContent.classList.remove('hidden');
+    consoleContent.classList.add('flex');
+    consoleChevron.classList.add('rotate-180');
+    queryInput.focus();
+  } else {
+    consoleContent.classList.add('hidden');
+    consoleContent.classList.remove('flex');
+    consoleChevron.classList.remove('rotate-180');
+  }
+});
+
+queryInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const query = queryInput.value.trim();
+
+    if (!currentParsedData) {
+      queryOutput.innerHTML = `<span class="text-red-400">Hata: Önce geçerli bir JSON verisi girmelisiniz.</span>`;
+      return;
+    }
+
+    if (!query) {
+      queryOutput.innerHTML = `<span class="text-gray-400">Sorgu sonucu burada görüntülenecek...</span>`;
+      return;
+    }
+
+    try {
+      const queryFunction = new Function('data', `return data.${query}`);
+      const result = queryFunction(currentParsedData);
+
+      if (result === undefined) {
+        queryOutput.innerHTML = `<span class="text-gray-500">undefined</span>`;
+      } else {
+        const formattedResult = JSON.stringify(result, null, 2);
+        queryOutput.innerHTML = syntaxHighlight(formattedResult);
+      }
+    } catch (error) {
+      queryOutput.innerHTML = `<span class="text-red-400">Sorgu Hatası: ${(error as Error).message}</span>`;
+    }
+  }
+});
+
+let currentIndentation: number | null = 4; // Varsayılan 4 boşluk
+
+minifyBtn.addEventListener('click', () => {
+  currentIndentation = null;
+  updateView();
+});
+
+beautifyBtn.addEventListener('click', () => {
+  currentIndentation = 4;
+  updateView();
+});
+
+copyBtn.addEventListener('click', async () => {
+  if (!currentParsedData) return;
+
+  try {
+    const textToCopy = JSON.stringify(currentParsedData, null, currentIndentation as any);
+
+    await navigator.clipboard.writeText(textToCopy);
+
+    const originalText = copyBtnText.textContent;
+
+    copyBtnText.textContent = 'Kopyalandı!';
+    copyBtn.classList.replace('bg-indigo-600', 'bg-green-600');
+    copyBtn.classList.replace('hover:bg-indigo-500', 'hover:bg-green-500');
+    copyBtn.disabled = true;
+
+    setTimeout(() => {
+      copyBtnText.textContent = originalText;
+      copyBtn.classList.replace('bg-green-600', 'bg-indigo-600');
+      copyBtn.classList.replace('hover:bg-green-500', 'hover:bg-indigo-500');
+      copyBtn.disabled = false;
+    }, 2000);
+
+  } catch (err) {
+    console.error('Kopyalama hatası:', err);
+    copyBtnText.textContent = 'Hata!';
+    setTimeout(() => { copyBtnText.textContent = 'Kopyala'; }, 2000);
+  }
+});
+
+const queryHelp = document.getElementById('query-help') as HTMLAnchorElement;
+queryHelp.addEventListener('click', (e) => {
+  e.stopPropagation();
+});
+
+function updateView() {
+  if (!currentParsedData) {
+    outputEl.innerHTML = '';
+    return;
+  }
+
+  const mode = viewModeSelect.value;
+
+  if (mode === 'text') {
+    textActions.classList.remove('hidden');
+    textActions.classList.add('flex');
+
+    const formatted = JSON.stringify(currentParsedData, null, currentIndentation as any);
+    outputEl.innerHTML = syntaxHighlight(formatted);
+  } else {
+    textActions.classList.add('hidden');
+    textActions.classList.remove('flex');
+    outputEl.innerHTML = renderTree(currentParsedData);
+  }
+}
+
+// Dropdown START
+const dropdownButton = document.getElementById('dropdown-button') as HTMLButtonElement;
+const dropdownMenu = document.getElementById('dropdown-menu') as HTMLDivElement;
+
+dropdownButton.addEventListener('click', (e) => {
+  e.stopPropagation();
+  dropdownMenu.classList.toggle('hidden');
+});
+
+document.addEventListener('click', (event) => {
+  if (!dropdownButton.contains(event.target as Node) && !dropdownMenu.contains(event.target as Node)) {
+    dropdownMenu.classList.add('hidden');
+  }
+});
+
+dropdownMenu.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', () => {
+    dropdownMenu.classList.add('hidden');
+  });
+});
+// Dropdown END

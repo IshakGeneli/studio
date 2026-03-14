@@ -5,5 +5,5 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
   ],
-  base: '/my-json-viewer/', 
+  base: '/', 
 })
