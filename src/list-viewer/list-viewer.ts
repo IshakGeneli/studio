@@ -36,12 +36,10 @@ function renderList() {
 
 textInput.addEventListener('input', () => {
   const rawValue = textInput.value;
-  // Satırlara böl ve boş olanları temizl
   lines = rawValue.split('\n').filter(l => l.trim() !== '');
   renderList();
 });
 
-// Silme butonları için Event Delegation
 listContainer.addEventListener('click', (e) => {
   const target = e.target as HTMLElement;
   const deleteBtn = target.closest('.delete-btn') as HTMLButtonElement;
@@ -49,18 +47,14 @@ listContainer.addEventListener('click', (e) => {
   if (deleteBtn) {
     const index = parseInt(deleteBtn.getAttribute('data-index')!);
     
-    // Diziden çıkar
     lines.splice(index, 1);
     
-    // Textarea'yı güncelle (senkronize kalması için)
     textInput.value = lines.join('\n');
     
-    // Yeniden render et
     renderList();
   }
 });
 
-// Tümünü temizle
 clearAllBtn.addEventListener('click', () => {
   if (confirm('Tüm listeyi temizlemek istediğinize emin misiniz?')) {
     lines = [];
@@ -68,3 +62,26 @@ clearAllBtn.addEventListener('click', () => {
     renderList();
   }
 });
+
+
+// Dropdown START
+const dropdownButton = document.getElementById('dropdown-button') as HTMLButtonElement;
+const dropdownMenu = document.getElementById('dropdown-menu') as HTMLDivElement;
+
+dropdownButton.addEventListener('click', (e) => {
+  e.stopPropagation();
+  dropdownMenu.classList.toggle('hidden');
+});
+
+document.addEventListener('click', (event) => {
+  if (!dropdownButton.contains(event.target as Node) && !dropdownMenu.contains(event.target as Node)) {
+    dropdownMenu.classList.add('hidden');
+  }
+});
+
+dropdownMenu.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', () => {
+    dropdownMenu.classList.add('hidden');
+  });
+});
+// Dropdown END
