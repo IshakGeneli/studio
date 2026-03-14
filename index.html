@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JSON Viewer</title>
+  <script type="module" crossorigin src="/my-json-viewer/assets/index-hMPNz7K1.js"></script>
+  <link rel="stylesheet" crossorigin href="/my-json-viewer/assets/index-DwLOpf1U.css">
+</head>
+
+<body class="bg-gray-100 text-gray-800 h-screen font-sans">
+  <div class="container mx-auto p-6 h-full flex flex-col">
+
+    <header class="mb-6 flex justify-between items-center">
+      <h1 class="text-3xl font-bold text-indigo-600">JSON Viewer</h1>
+      <span id="status-badge"
+        class="px-3 py-1 rounded-full text-sm font-semibold bg-gray-200 text-gray-600">Bekleniyor</span>
+    </header>
+
+    <div class="flex-1 flex flex-col md:flex-row gap-6 min-h-0">
+      <textarea id="json-input"
+        class="w-full md:w-1/2 p-4 border border-gray-300 rounded-lg shadow-inner focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm resize-none"
+        placeholder="Buraya JSON verisini yapıştırın..."></textarea>
+      <div class="w-full md:w-1/2 flex flex-col bg-gray-900 rounded-lg shadow-lg overflow-hidden">
+
+        <div class="flex justify-between items-center bg-gray-800 px-4 py-3 border-b border-gray-700">
+          <span class="text-sm font-medium text-gray-300">Sonuç Penceresi</span>
+          <select id="view-mode"
+            class="bg-gray-700 text-white text-sm rounded px-3 py-1 outline-none border border-gray-600 focus:border-indigo-500 cursor-pointer">
+            <option value="text" selected>Text</option>
+            <option value="tree">Tree</option>
+          </select>
+        </div>
+
+        <div class="p-4 overflow-auto flex-1">
+          <pre id="json-output" class="font-mono text-sm text-gray-100 break-words whitespace-pre-wrap"></pre>
+        </div>
+        <div class="border-t border-gray-700 bg-gray-800 z-10">
+          <button id="console-toggle"
+            class="w-full text-left px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-200 hover:bg-gray-700 focus:outline-none flex justify-between items-center transition-colors">
+            <span>>_ JSON Query Console</span>
+            <svg id="console-chevron" class="w-4 h-4 transform transition-transform duration-200" fill="none"
+              stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+            </svg>
+          </button>
+
+          <div id="console-content" class="hidden flex-col p-4 bg-gray-900 h-48 border-t border-gray-700">
+            <p class="text-xs text-gray-500 mb-2">JSON veriniz <code class="text-pink-400">data</code> değişkenine
+              atanmıştır. JS metotlarını (örn: <code class="text-blue-400">data.resources.filter(x => x.id > 5)</code>)
+              kullanabilirsiniz.</p>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-green-400 font-mono text-sm">data.</span>
+              <input type="text" id="query-input"
+                class="flex-1 bg-gray-800 text-gray-200 text-sm font-mono px-3 py-1.5 rounded border border-gray-600 focus:border-indigo-500 focus:outline-none placeholder-gray-600"
+                placeholder="Örn: resources[0] (Çalıştırmak için Enter'a basın)">
+            </div>
+            <div class="flex-1 overflow-auto bg-[#0d1117] p-3 rounded border border-gray-700 shadow-inner">
+              <pre id="query-output"
+                class="text-sm font-mono text-gray-400 whitespace-pre-wrap">Sorgu sonucu burada görüntülenecek...</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+
+</html>
