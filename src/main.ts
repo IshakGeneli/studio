@@ -7,9 +7,12 @@ const viewModeSelect = document.getElementById('view-mode') as HTMLSelectElement
 const textActions = document.getElementById('text-actions') as HTMLDivElement;
 const minifyBtn = document.getElementById('minify-btn') as HTMLButtonElement;
 const beautifyBtn = document.getElementById('beautify-btn') as HTMLButtonElement;
-const copyBtn = document.getElementById('copy-btn') as HTMLButtonElement;
-const copyBtnText = document.getElementById('copy-btn-text') as HTMLSpanElement;
-let currentParsedData: any = null;
+const copyPrimaryBtn = document.getElementById('copy-primary-btn') as HTMLButtonElement;
+const copyPrimaryBtnText = document.getElementById('copy-primary-btn-text') as HTMLSpanElement;
+const copyQueryResultBtn = document.getElementById('copy-query-result-btn') as HTMLButtonElement;
+
+let currentParsedPrimaryData: any = null;
+let currentParsedQueryResultData: any = null;
 
 function syntaxHighlight(json: string): string {
   json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -79,7 +82,7 @@ inputEl.addEventListener('input', () => {
   const rawValue = inputEl.value.trim();
 
   if (!rawValue) {
-    currentParsedData = null;
+    currentParsedPrimaryData = null;
     updateView();
     statusBadge.textContent = 'Bekleniyor';
     statusBadge.className = 'px-3 py-1 rounded-full text-sm font-semibold bg-gray-200 text-gray-600';
@@ -87,13 +90,13 @@ inputEl.addEventListener('input', () => {
   }
 
   try {
-    currentParsedData = JSON.parse(rawValue);
+    currentParsedPrimaryData = JSON.parse(rawValue);
     updateView();
 
     statusBadge.textContent = 'Geçerli JSON';
     statusBadge.className = 'px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-700';
   } catch (error) {
-    currentParsedData = null;
+    currentParsedPrimaryData = null;
     outputEl.innerHTML = `<span class="text-red-400">Hata: Geçersiz JSON formatı.\n${(error as Error).message}</span>`;
     statusBadge.textContent = 'Hatalı JSON';
     statusBadge.className = 'px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-700';
@@ -126,7 +129,7 @@ queryInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
     const query = queryInput.value.trim();
 
-    if (!currentParsedData) {
+    if (!currentParsedPrimaryData) {
       queryOutput.innerHTML = `<span class="text-red-400">Hata: Önce geçerli bir JSON verisi girmelisiniz.</span>`;
       return;
     }
@@ -138,7 +141,7 @@ queryInput.addEventListener('keydown', (e) => {
 
     try {
       const queryFunction = new Function('data', `return data.${query}`);
-      const result = queryFunction(currentParsedData);
+      const result = queryFunction(currentParsedPrimaryData);
 
       if (result === undefined) {
         queryOutput.innerHTML = `<span class="text-gray-500">undefined</span>`;
@@ -164,32 +167,69 @@ beautifyBtn.addEventListener('click', () => {
   updateView();
 });
 
-copyBtn.addEventListener('click', async () => {
-  if (!currentParsedData) return;
+copyPrimaryBtn.addEventListener('click', async () => {
+  if (!currentParsedPrimaryData) return;
 
   try {
-    const textToCopy = JSON.stringify(currentParsedData, null, currentIndentation as any);
+    const textToCopy = JSON.stringify(currentParsedPrimaryData, null, currentIndentation as any);
 
     await navigator.clipboard.writeText(textToCopy);
 
-    const originalText = copyBtnText.textContent;
+    const originalText = copyPrimaryBtnText.textContent;
 
-    copyBtnText.textContent = 'Kopyalandı!';
-    copyBtn.classList.replace('bg-indigo-600', 'bg-green-600');
-    copyBtn.classList.replace('hover:bg-indigo-500', 'hover:bg-green-500');
-    copyBtn.disabled = true;
+    copyPrimaryBtnText.textContent = 'Kopyalandı!';
+    copyPrimaryBtn.classList.replace('bg-indigo-600', 'bg-green-600');
+    copyPrimaryBtn.classList.replace('hover:bg-indigo-500', 'hover:bg-green-500');
+    copyPrimaryBtn.disabled = true;
 
     setTimeout(() => {
-      copyBtnText.textContent = originalText;
-      copyBtn.classList.replace('bg-green-600', 'bg-indigo-600');
-      copyBtn.classList.replace('hover:bg-green-500', 'hover:bg-indigo-500');
-      copyBtn.disabled = false;
+      copyPrimaryBtnText.textContent = originalText;
+      copyPrimaryBtn.classList.replace('bg-green-600', 'bg-indigo-600');
+      copyPrimaryBtn.classList.replace('hover:bg-green-500', 'hover:bg-indigo-500');
+      copyPrimaryBtn.disabled = false;
     }, 2000);
 
   } catch (err) {
     console.error('Kopyalama hatası:', err);
-    copyBtnText.textContent = 'Hata!';
-    setTimeout(() => { copyBtnText.textContent = 'Kopyala'; }, 2000);
+    copyPrimaryBtnText.textContent = 'Hata!';
+    setTimeout(() => { copyPrimaryBtnText.textContent = 'Kopyala'; }, 2000);
+  }
+});
+
+
+copyQueryResultBtn.addEventListener('click', async () => {
+  const textToCopy = queryOutput.innerText;
+
+  if (textToCopy === 'Sorgu sonucu burada görüntülenecek...') return;
+
+  try {
+    await navigator.clipboard.writeText(textToCopy);
+
+    const originalContent = copyQueryResultBtn.innerHTML;
+
+    copyQueryResultBtn.innerHTML = `
+      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+      </svg>
+      Kopyalandı!
+    `;
+    copyQueryResultBtn.classList.replace('text-gray-400', 'text-green-400');
+    copyQueryResultBtn.classList.replace('border-gray-600', 'border-green-600');
+    copyQueryResultBtn.disabled = true;
+
+    setTimeout(() => {
+      copyQueryResultBtn.innerHTML = originalContent;
+      copyQueryResultBtn.classList.replace('text-green-400', 'text-gray-400');
+      copyQueryResultBtn.classList.replace('border-green-600', 'border-gray-600');
+      copyQueryResultBtn.disabled = false;
+    }, 2000);
+
+  } catch (err) {
+    console.error('Kopyalama hatası:', err);
+    copyQueryResultBtn.textContent = 'Hata!';
+    setTimeout(() => {
+      location.reload(); 
+    }, 2000);
   }
 });
 
@@ -199,7 +239,7 @@ queryHelp.addEventListener('click', (e) => {
 });
 
 function updateView() {
-  if (!currentParsedData) {
+  if (!currentParsedPrimaryData) {
     outputEl.innerHTML = '';
     return;
   }
@@ -210,12 +250,12 @@ function updateView() {
     textActions.classList.remove('hidden');
     textActions.classList.add('flex');
 
-    const formatted = JSON.stringify(currentParsedData, null, currentIndentation as any);
+    const formatted = JSON.stringify(currentParsedPrimaryData, null, currentIndentation as any);
     outputEl.innerHTML = syntaxHighlight(formatted);
   } else {
     textActions.classList.add('hidden');
     textActions.classList.remove('flex');
-    outputEl.innerHTML = renderTree(currentParsedData);
+    outputEl.innerHTML = renderTree(currentParsedPrimaryData);
   }
 }
 
